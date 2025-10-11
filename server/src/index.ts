@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { v4 as uuidv4 } from 'uuid';
+import simpleGit from 'simple-git';
 
 
 const app = express();
@@ -13,14 +14,16 @@ app.get('/ping', (_req, res) => {
   res.send('Pong');
 });
 
-app.post('/deploy', (req, res) => {
+app.post('/deploy', async (req, res) => {
   const { repoUrl } = req.body;
 
   if (!repoUrl) {
     return res.status(400).send('Repository URL is required');
   }
 
-  console.log(`Deploying repository from ${repoUrl}`);
+  const id = uuidv4();
+  await simpleGit().clone(repoUrl, `./repos/${id}`);
+
   res.send('Deployment started');
 });
 
