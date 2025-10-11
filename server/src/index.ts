@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import { v4 as uuidv4 } from 'uuid';
 import simpleGit from 'simple-git';
+import path from 'path';
+import { getAllFiles } from './utils/get-all-files';
 
 
 const app = express();
@@ -22,9 +24,10 @@ app.post('/deploy', async (req, res) => {
   }
 
   const id = uuidv4();
-  await simpleGit().clone(repoUrl, `./repos/${id}`);
+  await simpleGit().clone(repoUrl, path.join(__dirname, `/repos/${id}`));
+  const allFiles = getAllFiles(path.join(__dirname, `/repos/${id}`));
 
-  res.send('Deployment started');
+  res.send({ id, allFiles });
 });
 
 app.listen(PORT, () => {
