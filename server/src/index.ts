@@ -1,9 +1,11 @@
+import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
 import { v4 as uuidv4 } from 'uuid';
 import simpleGit from 'simple-git';
 import path from 'path';
 import { getAllFiles } from './utils/get-all-files';
+dotenv.config();
 
 
 const app = express();
