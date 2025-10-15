@@ -6,11 +6,21 @@ import simpleGit from 'simple-git';
 import path from 'path';
 import { getAllFiles } from './utils/get-all-files';
 import { uploadFile } from './utils/upload-to-r2';
+import {createClient } from 'redis';
 dotenv.config();
 
 
 const app = express();
 const PORT = 3000;
+
+const redisClient = createClient();
+
+redisClient.on('error', (err) => {
+  console.error('Redis Client Error', err);
+});
+
+redisClient.connect();
+
 
 app.use(express.json());
 app.use(cors())
@@ -36,6 +46,8 @@ app.post('/deploy', async (req, res) => {
     allFiles.forEach(async file => {
       await uploadFile(file.slice(__dirname.length + 1), file);
     })
+
+    await redisClient.lPush("build-queue", id);
 
     res.send(id);
   } catch (error) {
