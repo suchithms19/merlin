@@ -3,3 +3,4 @@ server/dist
 server/.env
 deploy-service/node_modules
 deploy-service/.env
+deploy-service/dist
