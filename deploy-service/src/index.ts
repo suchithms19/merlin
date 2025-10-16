@@ -1,4 +1,5 @@
 import { createClient } from 'redis';
+import { downloadS3Folder } from './utils/download-R2';
 const subscriber = createClient();
 subscriber.connect();
 
@@ -8,7 +9,11 @@ async function main() {
             'build-queue',
             0,
           );
-        console.log('Received build job:', res);
+
+        if (!res) continue;
+        const id = res.element;
+
+        await downloadS3Folder(`repos/${id}`);
     }
 }
 main();
