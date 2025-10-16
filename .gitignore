@@ -4,3 +4,4 @@ server/.env
 deploy-service/node_modules
 deploy-service/.env
 deploy-service/dist
+deploy-service/downloads
