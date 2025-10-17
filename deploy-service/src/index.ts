@@ -1,5 +1,6 @@
 import { createClient } from 'redis';
 import { downloadS3Folder } from './utils/download-R2';
+import { buildProject } from './utils/child-process';
 const subscriber = createClient();
 subscriber.connect();
 
@@ -14,6 +15,7 @@ async function main() {
         const id = res.element;
 
         await downloadS3Folder(`repos/${id}`);
+        await buildProject(id);
     }
 }
 main();
