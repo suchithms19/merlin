@@ -15,12 +15,13 @@ const s3 = new S3({
     endpoint: r2_endpoint,
 });
 
-export function copyFinalDist(id: string) {
+export async function copyFinalDist(id: string) {
     const folderPath = path.join(process.cwd(), 'downloads', 'repos', id, 'dist');
     const allFiles = getAllFiles(folderPath);
-    allFiles.forEach(file => {
-        uploadFile(`dist/${id}/` + file.slice(folderPath.length + 1), file);
-    })
+    const upload_promises = allFiles.map(async (file) => {
+        return uploadFile(`dist/${id}/` + file.slice(folderPath.length + 1), file);
+    });
+    await Promise.all(upload_promises);
 }
 
 export const getAllFiles = (folderPath: string): string[] => {
