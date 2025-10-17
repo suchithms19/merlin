@@ -5,3 +5,6 @@ deploy-service/node_modules
 deploy-service/.env
 deploy-service/dist
 deploy-service/downloads
+request-handler/node_modules
+request-handler/.env
+request-handler/dist
