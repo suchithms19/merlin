@@ -42,10 +42,13 @@ app.post('/deploy', async (req, res) => {
     
     await simpleGit().clone(repoUrl, repoPath);
     const allFiles = getAllFiles(repoPath);
-    
-    allFiles.forEach(async file => {
-      await uploadFile(file.slice(__dirname.length + 1), file);
-    })
+
+    const upload_promises = allFiles.map((file) => {
+      const relative_in_repo = path.relative(repoPath, file);
+      const r2_key = path.join('repos', id, relative_in_repo);
+      return uploadFile(r2_key, file);
+    });
+    await Promise.all(upload_promises);
 
     await redisClient.lPush("build-queue", id);
 
