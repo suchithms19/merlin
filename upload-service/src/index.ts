@@ -62,7 +62,7 @@ app.post('/deploy', async (req, res) => {
 
 app.get('/status', async (req, res) => {
   const { id } = req.query;
-  const response = await redisClient.hGet("status", id as string);
+  const response = await subscriber.hGet("status", id as string);
   res.json({status: response});
 });
 
