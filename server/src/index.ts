@@ -9,18 +9,17 @@ import { uploadFile } from './utils/upload-to-r2';
 import {createClient } from 'redis';
 dotenv.config();
 
-
 const app = express();
 const PORT = 3000;
 
 const redisClient = createClient();
-
 redisClient.on('error', (err) => {
   console.error('Redis Client Error', err);
 });
-
 redisClient.connect();
 
+const subscriber = createClient();
+subscriber.connect();
 
 app.use(express.json());
 app.use(cors())
@@ -59,6 +58,12 @@ app.post('/deploy', async (req, res) => {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     res.status(500).send('Deployment failed: ' + errorMessage);
   }
+});
+
+app.get('/status', async (req, res) => {
+  const { id } = req.query;
+  const response = await redisClient.hGet("status", id as string);
+  res.json({status: response});
 });
 
 app.listen(PORT, () => {
