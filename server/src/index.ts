@@ -51,6 +51,7 @@ app.post('/deploy', async (req, res) => {
     await Promise.all(upload_promises);
 
     await redisClient.lPush("build-queue", id);
+    await redisClient.hSet("status", id, 'uploaded');
 
     res.send(id);
   } catch (error) {
