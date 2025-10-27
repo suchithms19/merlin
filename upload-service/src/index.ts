@@ -39,6 +39,8 @@ app.post('/deploy', async (req, res) => {
     const id = uuidv4();
     const repoPath = path.join(__dirname, `/repos/${id}`);
     
+    await redisClient.hSet("status", id, 'uploading');
+
     await simpleGit().clone(repoUrl, repoPath);
     const allFiles = getAllFiles(repoPath);
 
@@ -50,9 +52,9 @@ app.post('/deploy', async (req, res) => {
     await Promise.all(upload_promises);
 
     await redisClient.lPush("build-queue", id);
-    await redisClient.hSet("status", id, 'uploaded');
+    await redisClient.hSet("status", id, 'building');
 
-    res.send(id);
+    res.json({ id });
   } catch (error) {
     console.error('Deploy error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';

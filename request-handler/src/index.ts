@@ -14,7 +14,7 @@ const s3 = new S3({
 
 const app = express();
 
-app.get("/*", async (req, res) => {
+app.get("/*splat", async (req, res) => {
     const host = req.hostname;
 
     const id = host.split(".")[0];
@@ -30,4 +30,4 @@ app.get("/*", async (req, res) => {
     res.send(contents.Body);
 })
 
-app.listen(4000);
+app.listen(3001);

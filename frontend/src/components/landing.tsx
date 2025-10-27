@@ -12,6 +12,48 @@ export function Landing() {
   const [uploadId, setUploadId] = useState("");
   const [uploading, setUploading] = useState(false);
   const [deployed, setDeployed] = useState(false);
+  const [error, setError] = useState(""); // Add error state
+
+  const checkDeploymentStatus = async (id: string) => {
+    try {
+      const response = await axios.get(`${BACKEND_UPLOAD_URL}/status?id=${id}`);
+      console.log("Status response:", response.data);
+      if (response.data.status === "deployed") {
+        setDeployed(true);
+        setUploading(false);
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.error("Status check failed:", err);
+      return false;
+    }
+  };
+
+  const handleDeploy = async () => {
+    try {
+      setUploading(true);
+      setError("");
+      
+      const res = await axios.post(`${BACKEND_UPLOAD_URL}/deploy`, {
+        repoUrl: repoUrl
+      });
+      
+      setUploadId(res.data.id);
+
+      const interval = setInterval(async () => {
+        const isDeployed = await checkDeploymentStatus(res.data.id);
+        if (isDeployed) {
+          clearInterval(interval);
+        }
+      }, 3000);
+
+    } catch (err) {
+      setError("Deployment failed");
+      setUploading(false);
+      console.error("Deploy error:", err);
+    }
+  };
 
   return (
     <main className="flex flex-col items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
@@ -31,45 +73,39 @@ export function Landing() {
                 placeholder="https://github.com/username/repo" 
               />
             </div>
-            <Button onClick={async () => {
-              setUploading(true);
-              const res = await axios.post(`${BACKEND_UPLOAD_URL}/deploy`, {
-                repoUrl: repoUrl
-              });
-              setUploadId(res.data.id);
-              setUploading(false);
-              const interval = setInterval(async () => {
-                const response = await axios.get(`${BACKEND_UPLOAD_URL}/status?id=${res.data.id}`);
-
-                if (response.data.status === "deployed") {
-                  clearInterval(interval);
-                  setDeployed(true);
-                }
-              }, 3000)
-            }} disabled={uploadId !== "" || uploading} className="w-full" type="submit">
+            <Button 
+              onClick={handleDeploy} 
+              disabled={uploadId !== "" || uploading} 
+              className="w-full" 
+              type="submit"
+            >
               {uploadId ? `Deploying (${uploadId})` : uploading ? "Uploading..." : "Upload"}
             </Button>
+            {error && <p className="text-red-500 mt-2">{error}</p>}
           </div>
         </CardContent>
       </Card>
-      {deployed && <Card className="w-full max-w-md mt-8">
-        <CardHeader>
-          <CardTitle className="text-xl">Deployment Status</CardTitle>
-          <CardDescription>Your website is successfully deployed!</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            <Label htmlFor="deployed-url">Deployed URL</Label>
-            <Input id="deployed-url" readOnly type="url" value={`http://${uploadId}.dev.100xdevs.com:3001/index.html`} />
-          </div>
-          <br />
-          <Button className="w-full" variant="outline">
-            <a href={`http://${uploadId}.10kdevs.com/index.html`} target="_blank">
-              Visit Website
-            </a>
-          </Button>
-        </CardContent>
-      </Card>}
+
+      {deployed && (
+        <Card className="w-full max-w-md mt-8">
+          <CardHeader>
+            <CardTitle className="text-xl">Deployment Status</CardTitle>
+            <CardDescription>Your website is successfully deployed!</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <Label htmlFor="deployed-url">Deployed URL</Label>
+              <Input id="deployed-url" readOnly type="url" value={`http://${uploadId}.dev.100xdevs.com:3001/index.html`} />
+            </div>
+            <br />
+            <Button className="w-full" variant="outline">
+              <a href={`http://${uploadId}.10kdevs.com/index.html`} target="_blank">
+                Visit Website
+              </a>
+            </Button>
+          </CardContent>
+        </Card>
+      )}
     </main>
-  )
+  );
 }
